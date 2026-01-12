@@ -1,4 +1,4 @@
-**Symptoms Care Navigator**
+**Symptoms Triage Navigator**
 
 A hybrid AI-based healthcare triage demo that combines:
 - A **rule-based medical triage engine** (for safety and determinism)
@@ -25,3 +25,4 @@ Make sure you have:
 2. Install the required Python libraries:
 ```bash
 pip install streamlit requests urllib3
+
