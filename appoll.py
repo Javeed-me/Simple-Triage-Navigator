@@ -1,22 +1,3 @@
-"""
-Streamlit Triage Navigator — Robust Ollama Integration
-
-Features:
-- Persistent HTTP session with retries (fast failover)
-- Cached health check for Ollama at startup (so UI knows availability fast)
-- Short timeouts and exponential backoff on retries
-- Deterministic fallback functions if Ollama unavailable
-- Minimal LLM calls (follow-up + explanation rewrite)
-- Clean Streamlit chat-like UI + structured JSON output
-
-Requirements:
-pip install streamlit requests urllib3
-Ollama (optional): run a model locally to enable LLM features
-
-By default this tries Ollama at http://localhost:11434.
-Change OLLAMA_URL / OLLAMA_MODEL below if needed.
-"""
-
 import streamlit as st
 from dataclasses import dataclass, asdict
 from typing import List, Dict, Optional
@@ -362,3 +343,4 @@ if inp:
         st.session_state.symptoms_saved = ""
         st.session_state.asked_followup = False
         st.rerun()
+
