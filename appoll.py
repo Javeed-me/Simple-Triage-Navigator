@@ -7,17 +7,14 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 import time
 
-# -----------------------
+
 # Config: Ollama settings
-# -----------------------
 OLLAMA_URL = "http://localhost:11434/api/generate"
 OLLAMA_MODEL = "deepseek-r1:1.5b"  # change to the model name you run locally
 OLLAMA_TIMEOUT = 4  # seconds for each request attempt (short to avoid UI hangs)
 HEALTHCHECK_TIMEOUT = 1.5  # quick health check
 
-# -----------------------
 # Cached session w/ retries
-# -----------------------
 @st.cache_resource
 def get_http_session():
     session = requests.Session()
@@ -35,9 +32,7 @@ def get_http_session():
 
 session = get_http_session()
 
-# -----------------------
 # Fast Ollama health check 
-# -----------------------
 def check_ollama_available(force=False) -> bool:
     """
     Returns True if Ollama reachable. Cached in session_state with timestamp.
@@ -50,9 +45,6 @@ def check_ollama_available(force=False) -> bool:
         return cache["available"]
 
     try:
-        # lightweight GET/PING to base URL (some Ollama setups may not respond on '/')
-        # use POST health-check endpoint by calling /models or a tiny request
-        # Here we attempt a tiny prompt call with tiny timeout just to confirm API reachable.
         resp = session.post(
             OLLAMA_URL,
             json={"model": OLLAMA_MODEL, "prompt": "ping", "stream": False},
@@ -69,9 +61,7 @@ def check_ollama_available(force=False) -> bool:
 if "_ollama_status" not in st.session_state:
     st.session_state["_ollama_status"] = check_ollama_available()
 
-# -----------------------
-# Ollama caller with fast failover
-# -----------------------
+# Ollama caller with fast failover#
 def call_ollama(prompt: str, model: str = OLLAMA_MODEL, timeout: int = OLLAMA_TIMEOUT) -> Optional[str]:
     """
     Calls Ollama with short timeout. Returns response string on success, else None.
@@ -98,9 +88,8 @@ def call_ollama(prompt: str, model: str = OLLAMA_MODEL, timeout: int = OLLAMA_TI
         st.session_state["_ollama_health_cache"] = {"available": False, "last_checked": time.time()}
         return None
 
-# -----------------------
-# Deterministic fallbacks (instant)
-# -----------------------
+
+# Deterministic fallbacks (instant)#
 def fallback_followup_question(symptoms: str) -> str:
     s = symptoms.lower()
     if any(k in s for k in ["chest", "pressure", "tightness", "crushing"]):
@@ -126,9 +115,8 @@ def fallback_rewrite_explanation(base_expl: str, category: str, red_flags: List[
     lines.append("This is not a diagnosis. Please consult a medical professional if concerned.")
     return " ".join(lines)
 
-# -----------------------
-# Rule-based triage engine 
-# -----------------------
+
+# Rule-based triage engine# 
 
 @dataclass
 class SymptomRule:
@@ -212,9 +200,8 @@ def generate_next_steps(category: str) -> List[str]:
         return ["Book a routine clinic visit in the next few days.", "Monitor symptoms and record changes."]
     return ["Try home care (rest, fluids). Seek care if worse."]
 
-# -----------------------
-# Triage wrapper that uses LLM 
-# -----------------------
+
+# Triage wrapper that uses LLM# 
 def triage(user_text: str, prefer_llm: bool = True) -> TriageResult:
     red_flags = detect_red_flags(user_text)
     scores = score_symptoms(user_text)
@@ -254,9 +241,8 @@ Instructions: Keep it short, simple, and include a final "Please consult a medic
                         next_steps=next_steps,
                         safety_disclaimer=disclaimer)
 
-# -----------------------
+
 # Streamlit UI
-# -----------------------
 st.set_page_config(page_title="Triage Navigator (Ollama Integration)", page_icon="", layout="centered")
 st.title("Symptoms Care Navigator")
 st.caption("Demo triage tool — NOT medical advice or diagnosis.")
@@ -343,4 +329,5 @@ if inp:
         st.session_state.symptoms_saved = ""
         st.session_state.asked_followup = False
         st.rerun()
+
 
